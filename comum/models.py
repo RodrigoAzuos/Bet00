@@ -1,6 +1,8 @@
 
 from django.db import models
 from django.contrib.auth.models import User
+from django.http import request
+
 
 class Base(models.Model):
 
@@ -109,6 +111,10 @@ class Jogo(Base):
 
     def __str__(self):
         return "%s x %s" %(self.time_casa, self.time_fora)
+
+    def save(self):
+        self.local = self.time_casa.local
+        super(Jogo, self).save()
 
 
 class Rodada(Base):

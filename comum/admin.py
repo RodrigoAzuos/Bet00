@@ -24,6 +24,12 @@ class ApostaBilheteInline(admin.TabularInline):
     )
     extra = 1
 
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == 'jogo':
+            kwargs["queryset"] = Jogo.objects.filter(status='aberto')
+        return super(ApostaBilheteInline, self).formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 
 class JogoRodadaInline(admin.TabularInline):
     model = Jogo
@@ -63,7 +69,6 @@ class BilheteAdmin(admin.ModelAdmin):
         'valor',
         'premio',
         'premiado',
-        'usuario',
         'total_apostas',
     )
 
@@ -80,6 +85,18 @@ class BilheteAdmin(admin.ModelAdmin):
 
     inlines = (ApostaBilheteInline,)
 
+    def get_queryset(self, request):
+        qs = super(BilheteAdmin, self).get_queryset(request)
+
+        if not request.user.is_superuser:
+            qs = qs.filter(usuario=request.user)
+
+        return qs
+
+    def save_model(self, request, obj, form, change):
+        obj.usuario = request.user
+        obj.save()
+
 
 @admin.register(Jogo)
 class JogoAdmin(admin.ModelAdmin):
@@ -88,20 +105,24 @@ class JogoAdmin(admin.ModelAdmin):
         'resultado',
         'campeonato',
         'status',
+        'local',
         'valor_total_apostado',
     )
 
     readonly_fields = (
         'status',
         'valor_total_apostado',
+        'local',
     )
 
     actions = [encerrar_partida]
+
 
 @admin.register(Rodada)
 class RodadaAdmin(admin.ModelAdmin):
     list_display = (
         'nome',
+        'criado_em',
     )
 
     inlines = (JogoRodadaInline,)
