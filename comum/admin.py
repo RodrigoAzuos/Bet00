@@ -117,6 +117,8 @@ class JogoAdmin(admin.ModelAdmin):
 
     actions = [encerrar_partida]
 
+    list_filter = ('rodada__nome', 'data',)
+
 
 @admin.register(Rodada)
 class RodadaAdmin(admin.ModelAdmin):
