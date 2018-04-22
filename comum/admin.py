@@ -74,7 +74,7 @@ class BilheteAdmin(admin.ModelAdmin):
 
     fieldsets = (
         ("", {
-            'fields': ('valor', 'usuario',),
+            'fields': ('valor',),
         }),
     )
 
