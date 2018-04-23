@@ -108,7 +108,6 @@ class Jogo(Base):
 
             valor_a_distribuir = (0.8 * self.valor_total_apostado) / len(bilhetes_premiados)
 
-
             for bilhete in bilhetes_premiados:
                 bilhete.premio += valor_a_distribuir
                 bilhete.save()
