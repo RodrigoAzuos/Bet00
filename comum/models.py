@@ -61,6 +61,7 @@ class Jogo(Base):
 
     STATUS_JOGO = (
         ('aberto', 'ABERTO'),
+        ('em_espera', 'EM ESPERA'),
         ('fechado', 'FECHADO')
     )
 
@@ -81,7 +82,7 @@ class Jogo(Base):
     rodada = models.ForeignKey('Rodada', on_delete=models.CASCADE, related_name='jogos', blank=False, null=False)
 
     def finalizar(self):
-        if self.resultado != None:
+        if self.resultado != None and self.status != 'fechado':
             self.status = 'fechado'
             apostas = self.apostas_realizadas.all()
             for aposta in apostas:
@@ -89,21 +90,24 @@ class Jogo(Base):
         self.save()
 
     def calcula_montante_jogo(self):
-        if self.valor_total_apostado != None:
+        if self.valor_total_apostado == 0.0:
             for aposta in self.apostas_realizadas.all():
-                self.valor_total_apostado += aposta.bilhete.cota_a_distribuir()
+                self.valor_total_apostado += round(aposta.bilhete.cota_a_distribuir(), 2)
                 self.save()
 
     def distribuir_premio(self):
         bilhetes_premiados = []
         bilhetes = Bilhete.objects.filter(premiado=True)
+
         if len(bilhetes) > 0:
             for bilhete in bilhetes:
                 for aposta in bilhete.apostas.all():
                     if aposta.jogo.id == self.id and not bilhetes_premiados.__contains__(bilhete):
                         bilhetes_premiados.append(bilhete)
                         break
+
             valor_a_distribuir = (0.8 * self.valor_total_apostado) / len(bilhetes_premiados)
+
 
             for bilhete in bilhetes_premiados:
                 bilhete.premio += valor_a_distribuir
@@ -125,6 +129,8 @@ class Rodada(Base):
         for jogo in self.jogos.all():
             jogo.finalizar()
             jogo.calcula_montante_jogo()
+
+        for jogo in self.jogos.all():
             jogo.distribuir_premio()
 
     def __str__(self):

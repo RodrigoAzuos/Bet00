@@ -53,6 +53,8 @@ class JogoRodadaInline(admin.TabularInline):
 class TimeAdmin(admin.ModelAdmin):
     list_display = ('nome', 'local',)
 
+    icon = '<i class="material-icons">security</i>'
+
 
 @admin.register(Campeonato)
 class CampeonatoAdmin(admin.ModelAdmin):
@@ -60,6 +62,8 @@ class CampeonatoAdmin(admin.ModelAdmin):
         'nome',
         'local',
     )
+
+    icon = '<i class="material-icons">list</i>'
 
 
 @admin.register(Bilhete)
@@ -82,6 +86,8 @@ class BilheteAdmin(admin.ModelAdmin):
         'premio',
         'premiado',
     )
+
+    icon = '<i class="material-icons">receipt</i>'
 
     inlines = (ApostaBilheteInline,)
 
@@ -111,9 +117,16 @@ class JogoAdmin(admin.ModelAdmin):
 
     readonly_fields = (
         'status',
-        'valor_total_apostado',
         'local',
+        'valor_total_apostado',
     )
+
+    def save_model(self, request, obj, form, change):
+        if obj.resultado != None:
+            obj.status = 'em_espera'
+        obj.save()
+
+    icon = '<i class="material-icons">assignment</i>'
 
     actions = [encerrar_partida]
 
@@ -126,6 +139,8 @@ class RodadaAdmin(admin.ModelAdmin):
         'nome',
         'criado_em',
     )
+
+    icon = '<i class="material-icons">cached</i>'
 
     inlines = (JogoRodadaInline,)
 
